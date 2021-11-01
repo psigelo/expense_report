@@ -1,6 +1,5 @@
 import argparse
 import json
-from json import JSONDecodeError
 from typing import Optional, Awaitable
 
 from bson import ObjectId
@@ -9,6 +8,8 @@ from pymongo import MongoClient
 import tornado.ioloop
 import tornado.web
 import tornado.escape
+
+from ai.ai_receipt import get_data_from_area_receipt
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -127,6 +128,27 @@ class ReceiptHandlerUser(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+def get_receipt_field(user_id: str, receipt_id: str, specific_field: str, db_name: str):
+    client = MongoClient()
+    db = client[db_name]
+    table = db["receipts_info"]
+
+    receipt_obj = table.find_one({"_id": ObjectId(receipt_id)})
+    if receipt_obj is None:
+        return {"error": "receipt id not exists"}
+
+    if receipt_obj["user_id"] != user_id:
+        return {"error": "user and receipt combination not match"}
+
+    if specific_field == "fields":
+        return {"fields": list(receipt_obj.keys())}
+
+    if specific_field not in receipt_obj.keys():
+        return {"error": f"field {specific_field} not exists in this receipt, try request with fields as field to get a list of all fields in this receipt"}
+
+    return receipt_obj[specific_field]
+
+
 class ReceiptHandler(tornado.web.RequestHandler):
     config_data = None
 
@@ -134,29 +156,8 @@ class ReceiptHandler(tornado.web.RequestHandler):
         pass
 
     def get(self, user_id: str, receipt_id: str, specific_field: str) -> None:
-        print("dfa")
-        client = MongoClient()
-        db = client[self.config_data["db_name"]]
-        table = db["receipts_info"]
-
-        receipt_obj = table.find_one({"_id": ObjectId(receipt_id)})
-        if receipt_obj is None:
-            self.write({"error": "receipt id not exists"})
-            return None
-
-        if receipt_obj["user_id"] != user_id:
-            self.write({"error": "user and receipt combination not match"})
-            return None
-
-        if specific_field == "fields":
-            self.write({"fields": list(receipt_obj.keys())})
-            return None
-
-        if specific_field not in receipt_obj.keys():
-            self.write({"error": f"field {specific_field} not exists in this receipt, try request with fields as field to get a list of all fields in this receipt"})
-            return None
-
-        self.write(receipt_obj[specific_field])
+        response = get_receipt_field(user_id, receipt_id, specific_field, self.config_data["db_name"])
+        self.write(response)
 
 
 class CreateReceiptHandler(tornado.web.RequestHandler):
@@ -173,6 +174,40 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
         self.write({"receipt_id": str(result.inserted_id)})
 
 
+class CalcAreaReceipt(tornado.web.RequestHandler):
+    config_data = None
+
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
+
+    def get(self, user_id: str, receipt_id: str, specific_field: str):
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        receipt_oid = ObjectId(receipt_id)
+
+        receipt_dict = table.find_one({"_id": receipt_oid})
+
+        if receipt_dict is None:
+            self.write({"error": "receipt id does not exists"})
+            return None
+
+        if receipt_dict["user_id"] != user_id:
+            self.write({"error": "user does not match"})
+            return None
+
+        response = get_receipt_field(user_id, receipt_id, specific_field, self.config_data["db_name"])
+        if type(response) is dict:
+            if "error" in response.keys():
+                self.write(response)
+        data_from_area = get_data_from_area_receipt(specific_field, response)
+
+        receipt_dict[specific_field + "_data"] = data_from_area
+
+        table.update_one({'_id': receipt_oid}, {"$set": receipt_dict}, upsert=False)
+        self.write({"Status": "image uploaded"})
+
+
 def make_app():
     return tornado.web.Application([
         (r"/upload_image/(\w{1,30})/(\w{1,30})", UploadImageHandler),
@@ -182,6 +217,7 @@ def make_app():
         (r"/get_receipts_of_user/(\w{1,30})", ReceiptHandlerUser),
         (r"/get_receipt_field/(\w{1,30})/(\w{1,30})/(\w{1,30})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
+        (r"/calculate_data_from_area_receipt/(\w{1,30})/(\w{1,30})/(\w{1,30})", CalcAreaReceipt),
     ])
 
 
@@ -198,7 +234,7 @@ def main(config_file: str):
     CreateReceiptHandler.config_data = config_data
     ReceiptHandlerUser.config_data = config_data
     ReceiptHandler.config_data = config_data
-
+    CalcAreaReceipt.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
