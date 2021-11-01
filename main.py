@@ -117,6 +117,15 @@ class ReceiptHandlerUser(tornado.web.RequestHandler):
         response = []
         for it in cursor:
             it["_id"] = str(it["_id"])
+            it["comment"] = "to download the images in some columns use the get_receipt specific."
+            if "rut" in it.keys():
+                it["rut"] = "img bin"
+            if "total_amount" in it.keys():
+                it["total_amount"] = "img bin"
+            if "receipt_number" in it.keys():
+                it["receipt_number"] = "img bin"
+            if "b64_encoded_receipt" in it.keys():
+                it["b64_encoded_receipt"] = "img bin"
             response.append(it)
         self.write(json.dumps(response))
 
