@@ -48,16 +48,27 @@ class UploadImageAreaHandler(tornado.web.RequestHandler):
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
 
-    def post(self, user_id: int):
-        data = {}
-        try:
-            if len(self.request.body) != 0:
-                data = tornado.escape.json_decode(self.request.body)
+    def post(self, user_id: str, receipt_id: str, area_name: str):
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
 
-        except JSONDecodeError as e:
-            self.write({"error": "BAD json format in body"})
+        b64_encoded_receipt = self.request.body
+        receipt_oid = ObjectId(receipt_id)
+        receipt_dict = table.find_one({"_id": receipt_oid})
+
+        if receipt_dict is None:
+            self.write({"error": "receipt id does not exists"})
             return None
-        self.write({"test": "to implement"})
+
+        if receipt_dict["user_id"] != user_id:
+            self.write({"error": "user does not match"})
+            return None
+
+        receipt_dict[area_name] = b64_encoded_receipt
+
+        table.update_one({'_id': receipt_oid}, {"$set": receipt_dict}, upsert=False)
+        self.write({"Status": "image uploaded"})
 
 
 class UserHandler(tornado.web.RequestHandler):
