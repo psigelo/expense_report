@@ -14,7 +14,6 @@ import tornado.escape
 class UploadImageHandler(tornado.web.RequestHandler):
     config_data = None
 
-
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
 
@@ -47,16 +46,17 @@ class UserHandler(tornado.web.RequestHandler):
         pass
 
     def post(self, user_name: str, password: str):
-        # TODO : check trying to insert same username twice
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["users"]
 
+        if table.find_one({"username": user_name}) is not None:
+            self.write({"error": "username was picked"})
+            return None
+
         data_row = {"username": user_name, "password": password}
         result_insert = table.insert_one(data_row)
-        print(result_insert)
-
-        self.write({"test": "to implement"})
+        self.write({"user_id": str(result_insert.inserted_id)})
 
     def get(self, user_name: str, password: str):
         client = MongoClient()
@@ -68,8 +68,6 @@ class UserHandler(tornado.web.RequestHandler):
             self.write({"error": "user not found"})
             return None
         self.write({"user_id": str(user["_id"])})
-
-
 
 
 class ReceiptHandler(tornado.web.RequestHandler):
