@@ -109,12 +109,6 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
 
-    def get_all_receipts_from_user(self, user_id, data):
-        self.write({"test": "to implement"})
-
-    def get_receipt(self, receipt_id, data):
-        self.write({"test": "to implement"})
-
     def post(self, user_id):
         client = MongoClient()
         db = client[self.config_data["db_name"]]
@@ -129,7 +123,7 @@ def make_app():
         (r"/upload_image_area/(\d{0,10})/(\d{0,10})/(\w{1,30})", UploadImageAreaHandler),
         (r"/create_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
-        (r"/get_receipt_of_user/(\w{1,30})", ReceiptHandler),
+        (r"/get_receipts_of_user/(\w{1,30})", ReceiptHandler),
         (r"/get_receipt/(\d{0,10})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
     ])
