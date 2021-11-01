@@ -102,7 +102,7 @@ class UserHandler(tornado.web.RequestHandler):
         self.write({"user_id": str(user["_id"])})
 
 
-class ReceiptHandler(tornado.web.RequestHandler):
+class ReceiptHandlerUser(tornado.web.RequestHandler):
     config_data = None
 
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
@@ -138,10 +138,11 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
 def make_app():
     return tornado.web.Application([
         (r"/upload_image/(\w{1,30})/(\w{1,30})", UploadImageHandler),
-        (r"/upload_image_area/(\d{0,10})/(\d{0,10})/(\w{1,30})", UploadImageAreaHandler),
+        (r"/upload_image_area/(\w{1,30})/(\w{1,30})/(\w{1,30})", UploadImageAreaHandler),
         (r"/create_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
-        (r"/get_receipts_of_user/(\w{1,30})", ReceiptHandler),
+        (r"/get_receipts_of_user/(\w{1,30})", ReceiptHandlerUser),
+        (r"/get_receipt_field/(\w{1,30})/(\w{1,30})/(\w{1,30})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
     ])
 
@@ -157,7 +158,9 @@ def main(config_file: str):
     UploadImageAreaHandler.config_data = config_data
     UserHandler.config_data = config_data
     CreateReceiptHandler.config_data = config_data
+    ReceiptHandlerUser.config_data = config_data
     ReceiptHandler.config_data = config_data
+
 
     app = make_app()
     app.listen(config_data['port'])
