@@ -97,29 +97,17 @@ class ReceiptHandler(tornado.web.RequestHandler):
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
 
-    def get_all_receipts_from_user(self, user_id, data):
-        self.write({"test": "to implement"})
+    def get(self, user_id):
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
 
-    def get_receipt(self, receipt_id, data):
-        self.write({"test": "to implement"})
-
-    def post(self):
-        self.write({"test": "to implement"})
-
-    def get(self, id_wildcard):
-        data = {}
-        try:
-            if len(self.request.body) != 0:
-                data = tornado.escape.json_decode(self.request.body)
-
-        except JSONDecodeError as e:
-            self.write({"error": "BAD json format in body"})
-            return None
-
-        if isinstance(id_wildcard, str):
-            self.get_all_receipts_from_user(id_wildcard, data)
-        else:
-            self.get_receipt(id_wildcard, data)
+        cursor = table.find({"user_id": user_id})
+        response = []
+        for it in cursor:
+            it["_id"] = str(it["_id"])
+            response.append(it)
+        self.write(json.dumps(response))
 
 
 class CreateReceiptHandler(tornado.web.RequestHandler):
