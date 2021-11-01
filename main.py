@@ -2,6 +2,8 @@ import argparse
 import json
 from json import JSONDecodeError
 from typing import Optional, Awaitable
+
+from bson import ObjectId
 from pymongo import MongoClient
 
 import tornado.ioloop
@@ -11,6 +13,7 @@ import tornado.escape
 
 class UploadImageHandler(tornado.web.RequestHandler):
     config_data = None
+
 
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
@@ -116,8 +119,8 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        # table.insert_one({"user": user_id})
-        self.write({"ok": "200"})
+        result = table.insert_one({"user": user_id})
+        self.write({"receipt_id": str(result.inserted_id)})
 
 
 def make_app():
@@ -128,7 +131,7 @@ def make_app():
         (r"/get_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_receipt_of_user/(\w{1,30})", ReceiptHandler),
         (r"/get_receipt/(\d{0,10})", ReceiptHandler),
-        (r"/create_receipt/(\d{0,10})", CreateReceiptHandler),
+        (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
     ])
 
 
@@ -142,6 +145,7 @@ def main(config_file: str):
     UploadImageHandler.config_data = config_data
     UploadImageAreaHandler.config_data = config_data
     UserHandler.config_data = config_data
+    CreateReceiptHandler.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
