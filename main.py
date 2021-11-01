@@ -9,8 +9,6 @@ from pymongo import MongoClient
 import tornado.ioloop
 import tornado.web
 import tornado.escape
-import base64
-import numpy as np
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -25,8 +23,7 @@ class UploadImageHandler(tornado.web.RequestHandler):
         table = db["receipts_info"]
 
         b64_encoded_receipt = self.request.body
-        # jpg_original = base64.b64decode(b64_encoded_receipt)
-        # img_npy = np.frombuffer(jpg_original, dtype=np.uint8)
+
         receipt_oid = ObjectId(receipt_id)
         receipt_dict = table.find_one({"_id": receipt_oid})
         if receipt_dict is None:
