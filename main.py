@@ -130,6 +130,38 @@ class ReceiptHandlerUser(tornado.web.RequestHandler):
         self.write(json.dumps(response))
 
 
+class ReceiptHandler(tornado.web.RequestHandler):
+    config_data = None
+
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
+
+    def get(self, user_id: str, receipt_id: str, specific_field: str) -> None:
+        print("dfa")
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+
+        receipt_obj = table.find_one({"_id": ObjectId(receipt_id)})
+        if receipt_obj is None:
+            self.write({"error": "receipt id not exists"})
+            return None
+
+        if receipt_obj["user_id"] != user_id:
+            self.write({"error": "user and receipt combination not match"})
+            return None
+
+        if specific_field == "fields":
+            self.write({"fields": list(receipt_obj.keys())})
+            return None
+
+        if specific_field not in receipt_obj.keys():
+            self.write({"error": f"field {specific_field} not exists in this receipt, try request with fields as field to get a list of all fields in this receipt"})
+            return None
+
+        self.write(receipt_obj[specific_field])
+
+
 class CreateReceiptHandler(tornado.web.RequestHandler):
     config_data = None
 
