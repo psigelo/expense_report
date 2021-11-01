@@ -111,7 +111,7 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        result = table.insert_one({"user": user_id})
+        result = table.insert_one({"user_id": user_id})
         self.write({"receipt_id": str(result.inserted_id)})
 
 
