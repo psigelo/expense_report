@@ -44,6 +44,7 @@ class UserHandler(tornado.web.RequestHandler):
         pass
 
     def post(self, user_name: str, password: str):
+        # TODO : check trying to insert same username twice
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["users"]
@@ -55,15 +56,17 @@ class UserHandler(tornado.web.RequestHandler):
         self.write({"test": "to implement"})
 
     def get(self, user_name: str, password: str):
-        data = {}
-        try:
-            if len(self.request.body) != 0:
-                data = tornado.escape.json_decode(self.request.body)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["users"]
 
-        except JSONDecodeError as e:
-            self.write({"error": "BAD json format in body"})
+        user = table.find_one({"username": user_name, "password": password})
+        if user is None:
+            self.write({"error": "user not found"})
             return None
-        self.write({"test": "to implement"})
+        self.write({"user_id": str(user["_id"])})
+
+
 
 
 class ReceiptHandler(tornado.web.RequestHandler):
@@ -97,6 +100,26 @@ class ReceiptHandler(tornado.web.RequestHandler):
             self.get_receipt(id_wildcard, data)
 
 
+class CreateReceiptHandler(tornado.web.RequestHandler):
+    config_data = None
+
+    def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
+        pass
+
+    def get_all_receipts_from_user(self, user_id, data):
+        self.write({"test": "to implement"})
+
+    def get_receipt(self, receipt_id, data):
+        self.write({"test": "to implement"})
+
+    def post(self, user_id):
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        # table.insert_one({"user": user_id})
+        self.write({"ok": "200"})
+
+
 def make_app():
     return tornado.web.Application([
         (r"/upload_image/(\d{0,10})", UploadImageHandler),
@@ -105,7 +128,7 @@ def make_app():
         (r"/get_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_receipt_of_user/(\w{1,30})", ReceiptHandler),
         (r"/get_receipt/(\d{0,10})", ReceiptHandler),
-        (r"/create_receipt/(\d{0,10})", ReceiptHandler),
+        (r"/create_receipt/(\d{0,10})", CreateReceiptHandler),
     ])
 
 
