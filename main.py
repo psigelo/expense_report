@@ -9,6 +9,8 @@ from pymongo import MongoClient
 import tornado.ioloop
 import tornado.web
 import tornado.escape
+import base64
+import numpy as np
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -17,8 +19,27 @@ class UploadImageHandler(tornado.web.RequestHandler):
     def data_received(self, chunk: bytes) -> Optional[Awaitable[None]]:
         pass
 
-    def post(self, user_id: int):
-        self.write({"test": "to implement"})
+    def post(self, user_id: str, receipt_id: str):
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+
+        b64_encoded_receipt = self.request.body
+        # jpg_original = base64.b64decode(b64_encoded_receipt)
+        # img_npy = np.frombuffer(jpg_original, dtype=np.uint8)
+        receipt_oid = ObjectId(receipt_id)
+        receipt_dict = table.find_one({"_id": receipt_oid})
+        if receipt_dict is None:
+            self.write({"error": "receipt id does not exists"})
+            return None
+
+        if receipt_dict["user_id"] != user_id:
+            self.write({"error": "user does not match"})
+            return None
+
+        receipt_dict["b64_encoded_receipt"] = b64_encoded_receipt
+        table.update_one({'_id': receipt_oid}, {"$set": receipt_dict}, upsert=False)
+        self.write({"Status": "image uploaded"})
 
 
 class UploadImageAreaHandler(tornado.web.RequestHandler):
@@ -117,12 +138,11 @@ class CreateReceiptHandler(tornado.web.RequestHandler):
 
 def make_app():
     return tornado.web.Application([
-        (r"/upload_image/(\d{0,10})", UploadImageHandler),
+        (r"/upload_image/(\w{1,30})/(\w{1,30})", UploadImageHandler),
         (r"/upload_image_area/(\d{0,10})/(\d{0,10})/(\w{1,30})", UploadImageAreaHandler),
         (r"/create_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_user/(\w{1,30})/(\w{1,30})", UserHandler),  # TODO: change user manage to one more secure
         (r"/get_receipts_of_user/(\w{1,30})", ReceiptHandler),
-        (r"/get_receipt/(\d{0,10})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
     ])
 
@@ -138,6 +158,7 @@ def main(config_file: str):
     UploadImageAreaHandler.config_data = config_data
     UserHandler.config_data = config_data
     CreateReceiptHandler.config_data = config_data
+    ReceiptHandler.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
