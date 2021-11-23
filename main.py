@@ -144,7 +144,8 @@ def get_receipt_field(user_id: str, receipt_id: str, specific_field: str, db_nam
         return {"fields": list(receipt_obj.keys())}
 
     if specific_field not in receipt_obj.keys():
-        return {"error": f"field {specific_field} not exists in this receipt, try request with fields as field to get a list of all fields in this receipt"}
+        return {"error": f"field {specific_field} not exists in this receipt, "
+                         f"try request with fields as field to get a list of all fields in this receipt"}
 
     return receipt_obj[specific_field]
 
