@@ -1,3 +1,4 @@
 tornado
 pymongo
 numpy
+opencv-python
