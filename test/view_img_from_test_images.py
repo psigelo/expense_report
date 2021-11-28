@@ -1,5 +1,4 @@
 import os.path
-
 import cv2
 import json
 import os
@@ -46,7 +45,6 @@ def see_img_from_test_images(json_test_images_crop_areas):
             k = cv2.waitKey(1)
             if k == ord('q'):
                 break
-
 
 
 if __name__ == '__main__':

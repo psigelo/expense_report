@@ -1,48 +1,49 @@
-import glob
 import json
+import os
+import cv2
+from ai.ai_receipt import get_data_from_area_receipt
 
 
-def check_user_exists(username):
-    pass
+def get_name_image(img, area, image_info):
+    c1_min = image_info[area]["cv_coord1_min"]
+    c1_max = image_info[area]["cv_coord1_max"]
+    c2_min = image_info[area]["cv_coord2_min"]
+    c2_max = image_info[area]["cv_coord2_max"]
+    return img[c1_min:c1_max, c2_min:c2_max]
 
 
-def create_user(username, password):
-    pass
+def show_img(result_text: str, img_total):
+    cv2.namedWindow(result_text, cv2.WINDOW_NORMAL)
+    while True:
+        cv2.imshow(result_text, img_total)
+        k = cv2.waitKey(1)
+        if k == ord('q'):
+            break
+    cv2.destroyAllWindows()
 
 
-def connect_user(username, password):
-    user_id = ""
-    return user_id
-
-
-def create_receipt(user_id):
-    pass
-
-
-def test_accuracy(test_user_name, receipt_images_folder, json_test_images_crop_areas):
-    # CHECK IF USER EXISTS, IF EXISTS JUST END WITH ERROR.
-    check_user_exists(username=test_user_name)
-
-    # CREATE USER
-    password = "testing"
-    create_user(test_user_name, password)
-
-    # CONNECT USER
-    user_id = connect_user(test_user_name, password)
-
-    # CREATE RECEIPT
-    create_receipt(user_id)
-
-    # LOAD RECEIPT IMAGES
-    image_files = glob.glob(receipt_images_folder)
+def test_accuracy( json_test_images_crop_areas):
     file = open(json_test_images_crop_areas)
-    crop_areas_images = json.load(file)
+    test_images = json.load(file)
 
-    # TODO usage of AI system
+    for image_name, image_info in test_images.items():
+        img = cv2.imread(os.path.join("./test_receipts_imgs/", image_name))
+        img_name = get_name_image(img, "name_area", image_info)
+        img_rut = get_name_image(img, "rut_area", image_info)
+        img_total = get_name_image(img, "total_amount", image_info)
+
+        print("see title to view the AI result")
+
+        result_name = get_data_from_area_receipt(img_name)
+        show_img(result_name, img_name)
+
+        result_rut = get_data_from_area_receipt(img_rut)
+        show_img(result_rut, img_rut)
+
+        result_total = get_data_from_area_receipt(img_total)
+        show_img(result_total, img_total)
 
 
 if __name__ == "__main__":
-    test_username = "test1234"
-    receipt_images_folder_g = "./test_receipts_imgs/*.jpeg"
     json_test_images_crop_areas_g = "./test_receipts_imgs/test_images_crop_areas.json"
-    test_accuracy(test_username, receipt_images_folder_g, json_test_images_crop_areas_g)
+    test_accuracy(json_test_images_crop_areas_g)
