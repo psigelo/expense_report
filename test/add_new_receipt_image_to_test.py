@@ -7,11 +7,11 @@ import json
 
 points = []
 
+
 def draw_circle(event, x, y, flags, param):
-    global mouseX,mouseY
     if event == cv2.EVENT_LBUTTONDBLCLK:
         if len(points) < 4:
-            points.append((x,y))
+            points.append((x, y))
 
 
 def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
