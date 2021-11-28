@@ -17,6 +17,36 @@ def see_img_from_test_images(json_test_images_crop_areas):
             if k == ord('q'):
                 break
 
+        while True:
+            c1_min = image_info["rut_area"]["cv_coord1_min"]
+            c1_max = image_info["rut_area"]["cv_coord1_max"]
+            c2_min = image_info["rut_area"]["cv_coord2_min"]
+            c2_max = image_info["rut_area"]["cv_coord2_max"]
+            cv2.imshow('img', img[c1_min:c1_max, c2_min:c2_max])
+            k = cv2.waitKey(1)
+            if k == ord('q'):
+                break
+
+        while True:
+            c1_min = image_info["name_area"]["cv_coord1_min"]
+            c1_max = image_info["name_area"]["cv_coord1_max"]
+            c2_min = image_info["name_area"]["cv_coord2_min"]
+            c2_max = image_info["name_area"]["cv_coord2_max"]
+            cv2.imshow('img', img[c1_min:c1_max, c2_min:c2_max])
+            k = cv2.waitKey(1)
+            if k == ord('q'):
+                break
+
+        while True:
+            c1_min = image_info["total_amount"]["cv_coord1_min"]
+            c1_max = image_info["total_amount"]["cv_coord1_max"]
+            c2_min = image_info["total_amount"]["cv_coord2_min"]
+            c2_max = image_info["total_amount"]["cv_coord2_max"]
+            cv2.imshow('img', img[c1_min:c1_max, c2_min:c2_max])
+            k = cv2.waitKey(1)
+            if k == ord('q'):
+                break
+
 
 
 if __name__ == '__main__':
