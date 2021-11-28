@@ -19,8 +19,6 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
     cv2.namedWindow("img", cv2.WINDOW_NORMAL)
     data_to_insert = dict()
 
-    data_to_insert["filename"] = os.path.basename(img_filepath)
-
     file = open(json_test_images_crop_areas)
     crop_areas_images = json.load(file)
     file.close()
