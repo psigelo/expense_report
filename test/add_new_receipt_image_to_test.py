@@ -16,6 +16,7 @@ def draw_circle(event, x, y, flags, param):
 
 def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
     # TODO: la mayor parte del codigo esta repetido 4 veces, pasarlo a funcion!
+    cv2.namedWindow("img", cv2.WINDOW_NORMAL)
     data_to_insert = dict()
 
     data_to_insert["filename"] = os.path.basename(img_filepath)
@@ -63,8 +64,8 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             elif k == ord('r'):
                 points = []
 
-    cv2.destroyAllWindows()
     if exit_program:
+        cv2.destroyAllWindows()
         exit(1)
 
     data = np.array(points)
@@ -118,8 +119,8 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             if k == ord('r'):
                 points = []
 
-    cv2.destroyAllWindows()
     if exit_program:
+        cv2.destroyAllWindows()
         exit(1)
 
     data = np.array(points)
@@ -173,8 +174,8 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             if k == ord('r'):
                 points = []
 
-    cv2.destroyAllWindows()
     if exit_program:
+        cv2.destroyAllWindows()
         exit(1)
 
     data = np.array(points)
@@ -194,6 +195,7 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
     out_file = open(json_test_images_crop_areas, "w")
     json.dump(crop_areas_images, out_file)
     out_file.close()
+    cv2.destroyAllWindows()
 
 
 if __name__ == "__main__":
