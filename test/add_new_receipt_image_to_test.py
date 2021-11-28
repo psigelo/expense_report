@@ -57,6 +57,7 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             cv2.setMouseCallback('img', draw_circle)
             k = cv2.waitKey(1)
             if k == ord('q'):
+                exit_program = True
                 break
 
             elif k == ord('r'):
@@ -111,6 +112,7 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             cv2.setMouseCallback('img', draw_circle)
             k = cv2.waitKey(1)
             if k == ord('q'):
+                exit_program = True
                 break
 
             if k == ord('r'):
@@ -165,6 +167,7 @@ def add_new_receipt_image_to_test(img_filepath, json_test_images_crop_areas):
             cv2.setMouseCallback('img', draw_circle)
             k = cv2.waitKey(1)
             if k == ord('q'):
+                exit_program = True
                 break
 
             if k == ord('r'):
