@@ -4,14 +4,6 @@ import cv2
 from ai.ai_receipt import get_suggestions_area_receipt
 
 
-def get_name_image(img, area, image_info):
-    c1_min = image_info[area]["cv_coord1_min"]
-    c1_max = image_info[area]["cv_coord1_max"]
-    c2_min = image_info[area]["cv_coord2_min"]
-    c2_max = image_info[area]["cv_coord2_max"]
-    return img[c1_min:c1_max, c2_min:c2_max]
-
-
 def show_img_with_suggestions(img_total, title="imagen con sugerencias"):
     cv2.namedWindow(title, cv2.WINDOW_NORMAL)
     while True:
