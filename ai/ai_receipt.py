@@ -11,3 +11,7 @@ def get_data_from_area_receipt_b64(b64_encoded_roi):
     img_npy = np.frombuffer(jpg_original, dtype=np.uint8)
 
     return get_data_from_area_receipt(img_npy)
+
+
+def get_suggestions_area_receipt(img):
+    return img
