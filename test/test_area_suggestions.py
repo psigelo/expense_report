@@ -20,7 +20,7 @@ def test_accuracy(json_test_images_crop_areas):
 
     for image_name, image_info in test_images.items():
         img = cv2.imread(os.path.join("./test_receipts_imgs/", image_name))
-
+        print("to exit press q")
         img_name_with_suggestions = get_suggestions_area_receipt(img)
         show_img_with_suggestions(img_name_with_suggestions)
 
