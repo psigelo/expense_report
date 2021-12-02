@@ -20,8 +20,9 @@ def test_accuracy(json_test_images_crop_areas):
     test_images = json.load(file)
 
     # Precargar el modelo para que no se cargue cada vez que entra a ver una foto
-    path_model = '/home/anonimo/Documents/MIA/Capstone/expense_report/ai/CRAFT'
-    model = os.path.join(path_model, 'craft_mlt_25k.pth')
+    script_dir = os.path.dirname(os.getcwd())
+    rel_path = "ai/CRAFT/craft_mlt_25k.pth"
+    model = os.path.join(script_dir, rel_path)
     net = load_model(model)
 
     for image_name, image_info in test_images.items():
