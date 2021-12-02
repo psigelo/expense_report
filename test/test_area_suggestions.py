@@ -2,6 +2,7 @@ import json
 import os
 import cv2
 from ai.ai_receipt import get_suggestions_area_receipt
+from ai.CRAFT.try_test import load_model
 
 
 def show_img_with_suggestions(img_total, title="imagen con sugerencias"):
@@ -18,10 +19,15 @@ def test_accuracy(json_test_images_crop_areas):
     file = open(json_test_images_crop_areas)
     test_images = json.load(file)
 
+    # Precargar el modelo para que no se cargue cada vez que entra a ver una foto
+    path_model = '/home/anonimo/Documents/MIA/Capstone/expense_report/ai/CRAFT'
+    model = os.path.join(path_model, 'craft_mlt_25k.pth')
+    net = load_model(model)
+
     for image_name, image_info in test_images.items():
         img = cv2.imread(os.path.join("./test_receipts_imgs/", image_name))
         print("to exit press q")
-        img_name_with_suggestions = get_suggestions_area_receipt(img)
+        img_name_with_suggestions, _ = get_suggestions_area_receipt(net, img)
         show_img_with_suggestions(img_name_with_suggestions)
 
 
