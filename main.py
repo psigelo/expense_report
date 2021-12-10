@@ -219,7 +219,7 @@ def make_app():
         (r"/get_receipt_field/(\w{1,30})/(\w{1,30})/(\w{1,30})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
         (r"/calculate_data_from_area_receipt/(\w{1,30})/(\w{1,30})/(\w{1,30})", CalcAreaReceipt),
-    ])
+    ], cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")  # See configuration in readme
 
 
 def main(config_file: str):
