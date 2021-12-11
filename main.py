@@ -13,7 +13,8 @@ import tornado.web
 import tornado.escape
 
 from ai.ai_receipt import get_data_from_area_receipt
-from web_handlers.web_handlers import LoginHandler, MainHandler
+from backend_common.user_utils import insert_new_user, check_user
+from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -80,28 +81,12 @@ class UserHandler(tornado.web.RequestHandler):
         pass
 
     def post(self, user_name: str, password: str):
-        client = MongoClient()
-        db = client[self.config_data["db_name"]]
-        table = db["users"]
-
-        if table.find_one({"username": user_name}) is not None:
-            self.write({"error": "username was picked"})
-            return None
-
-        data_row = {"username": user_name, "password": password}
-        result_insert = table.insert_one(data_row)
-        self.write({"user_id": str(result_insert.inserted_id)})
+        response = insert_new_user(user_name, password, self.config_data)
+        self.write(response)
 
     def get(self, user_name: str, password: str):
-        client = MongoClient()
-        db = client[self.config_data["db_name"]]
-        table = db["users"]
-
-        user = table.find_one({"username": user_name, "password": password})
-        if user is None:
-            self.write({"error": "user not found"})
-            return None
-        self.write({"user_id": str(user["_id"])})
+        response = check_user(user_name, password, self.config_data)
+        self.write(response)
 
 
 class ReceiptHandlerUser(tornado.web.RequestHandler):
@@ -231,6 +216,7 @@ def make_app():
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
         (r"/calculate_data_from_area_receipt/(\w{1,30})/(\w{1,30})/(\w{1,30})", CalcAreaReceipt),
         (r"/login", LoginHandler),
+        (r"/register", RegisterHandler),
         (r"/", MainHandler),
     ], **settings)
 
@@ -249,6 +235,8 @@ def main(config_file: str):
     ReceiptHandlerUser.config_data = config_data
     ReceiptHandler.config_data = config_data
     CalcAreaReceipt.config_data = config_data
+    LoginHandler.config_data = config_data
+    RegisterHandler.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])

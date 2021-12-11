@@ -2,3 +2,6 @@ tornado
 pymongo
 numpy
 opencv-python
+torch
+torchvision
+scikit-image
