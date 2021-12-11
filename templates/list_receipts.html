@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit receipt - list</title>
+</head>
+<body>
+
+<a href="/"> back </a>
+<table>
+    {% for receipt in receipts %}
+    <tr><th><a href="/edit_receipt/{{escape(receipt)}}">{{ escape(receipt) }}</a></th></tr>
+    {% end %}
+</table>
+
+
+</body>
+</html>

@@ -95,6 +95,4 @@ def image_suggested_areas(img, boxes, verticals=None, texts=None):
         poly = poly.reshape(-1, 2)
         cv2.polylines(img, [poly.reshape((-1, 1, 2))], True, color=(0, 0, 255), thickness=2)
         #ptColor = (0, 255, 255)
-
-
     return img

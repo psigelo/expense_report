@@ -90,6 +90,46 @@ class BrowserUploadHandler(BaseHandler):
         self.redirect("/")  # TODO: redirect to edit this receipt directly when that endpoint exists
 
 
+class ListReceiptsHandler(BaseHandler):
+    config_data = None
+    def get(self):
+        # name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        cursor = table.find()
+        receipts = []
+        for data in cursor:
+            receipts.append(str(data["_id"]))
+        self.render("list_receipts.html", receipts=receipts)
+        # self.write("fda")
+
+class EditReceiptsHandler(BaseHandler):
+    config_data = None
+
+    def get(self, receipt_id):
+        # name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        cursor = table.find()
+        self.render("edit_receipt.html", receipt_id=receipt_id)
+        # self.write("fda")
+
+
+class SeeReceiptHandler(BaseHandler):
+    config_data = None
+
+    def get(self, receipt_id):
+        self.set_header("Content-type", "image/jpg")
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        receipt = table.find_one({"_id": ObjectId(receipt_id)})
+        # img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
+        self.write(receipt["img"])
+
+
 class TestSeeReceiptHandler(BaseHandler):
     config_data = None
 

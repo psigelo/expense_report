@@ -5,15 +5,20 @@ import ai.CRAFT.imgproc as imgproc
 from ai.CRAFT.file_utils import image_suggested_areas
 
 
-def get_data_from_area_receipt(img_area):
+# class CnnHandler():
+#     cnn =
+
+
+def get_data_from_area_receipt(net, img_area):
+
     return "not implemented yet!"
 
 
-def get_data_from_area_receipt_b64(b64_encoded_roi):
+def get_data_from_area_receipt_b64(net, b64_encoded_roi):
     jpg_original = base64.b64decode(b64_encoded_roi)
     img_npy = np.frombuffer(jpg_original, dtype=np.uint8)
 
-    return get_data_from_area_receipt(img_npy)
+    return get_data_from_area_receipt(net, img_npy)
 
 
 def get_suggestions_area_receipt(net, img):

@@ -15,7 +15,7 @@ import tornado.escape
 from ai.ai_receipt import get_data_from_area_receipt
 from backend_common.user_utils import insert_new_user, check_user
 from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler, LogoutHandler, NewReceiptHandler, \
-    BrowserUploadHandler, TestSeeReceiptHandler
+    BrowserUploadHandler, TestSeeReceiptHandler, ListReceiptsHandler, SeeReceiptHandler, EditReceiptsHandler
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -204,6 +204,10 @@ def make_app():
         (r"/upload_browser", BrowserUploadHandler),
         (r"/new_receipt", NewReceiptHandler),
         (r"/test_receipt", TestSeeReceiptHandler),
+        (r"/see_receipt/(\w{1,50})", SeeReceiptHandler),
+        (r"/list_receipts", ListReceiptsHandler),
+        (r"/edit_receipt/(\w{1,50})", EditReceiptsHandler),
+
         (r"/", MainHandler),
 
     ], **settings)
@@ -228,6 +232,9 @@ def main(config_file: str):
     RegisterHandler.config_data = config_data
     BrowserUploadHandler.config_data = config_data
     TestSeeReceiptHandler.config_data = config_data
+    ListReceiptsHandler.config_data = config_data
+    EditReceiptsHandler.config_data = config_data
+    SeeReceiptHandler.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
