@@ -49,4 +49,4 @@ def see_img_from_test_images(json_test_images_crop_areas):
 
 if __name__ == '__main__':
     json_test_images_crop_areas_g = "./test_receipts_imgs/test_images_crop_areas.json"  # TODO: to argument with this value by default
-    see_img_from_test_images( json_test_images_crop_areas_g)
+    see_img_from_test_images(json_test_images_crop_areas_g)

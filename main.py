@@ -14,7 +14,8 @@ import tornado.escape
 
 from ai.ai_receipt import get_data_from_area_receipt
 from backend_common.user_utils import insert_new_user, check_user
-from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler
+from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler, LogoutHandler, NewReceiptHandler, \
+    BrowserUploadHandler, TestSeeReceiptHandler
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -24,25 +25,7 @@ class UploadImageHandler(tornado.web.RequestHandler):
         pass
 
     def post(self, user_id: str, receipt_id: str):
-        client = MongoClient()
-        db = client[self.config_data["db_name"]]
-        table = db["receipts_info"]
-
-        b64_encoded_receipt = self.request.body
-
-        receipt_oid = ObjectId(receipt_id)
-        receipt_dict = table.find_one({"_id": receipt_oid})
-        if receipt_dict is None:
-            self.write({"error": "receipt id does not exists"})
-            return None
-
-        if receipt_dict["user_id"] != user_id:
-            self.write({"error": "user does not match"})
-            return None
-
-        receipt_dict["b64_encoded_receipt"] = b64_encoded_receipt
-        table.update_one({'_id': receipt_oid}, {"$set": receipt_dict}, upsert=False)
-        self.write({"Status": "image uploaded"})
+        self.write("not implemented")
 
 
 class UploadImageAreaHandler(tornado.web.RequestHandler):
@@ -217,7 +200,12 @@ def make_app():
         (r"/calculate_data_from_area_receipt/(\w{1,30})/(\w{1,30})/(\w{1,30})", CalcAreaReceipt),
         (r"/login", LoginHandler),
         (r"/register", RegisterHandler),
+        (r"/logout", LogoutHandler),
+        (r"/upload_browser", BrowserUploadHandler),
+        (r"/new_receipt", NewReceiptHandler),
+        (r"/test_receipt", TestSeeReceiptHandler),
         (r"/", MainHandler),
+
     ], **settings)
 
 
@@ -228,6 +216,7 @@ def main(config_file: str):
 
     with open(config_file) as json_data:
         config_data = json.load(json_data)
+
     UploadImageHandler.config_data = config_data
     UploadImageAreaHandler.config_data = config_data
     UserHandler.config_data = config_data
@@ -237,6 +226,8 @@ def main(config_file: str):
     CalcAreaReceipt.config_data = config_data
     LoginHandler.config_data = config_data
     RegisterHandler.config_data = config_data
+    BrowserUploadHandler.config_data = config_data
+    TestSeeReceiptHandler.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
