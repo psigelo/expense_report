@@ -1,5 +1,8 @@
 import argparse
+import base64
 import json
+import uuid
+from os.path import join, dirname
 from typing import Optional, Awaitable
 
 from bson import ObjectId
@@ -10,6 +13,7 @@ import tornado.web
 import tornado.escape
 
 from ai.ai_receipt import get_data_from_area_receipt
+from web_handlers.web_handlers import LoginHandler, MainHandler
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -210,6 +214,13 @@ class CalcAreaReceipt(tornado.web.RequestHandler):
 
 
 def make_app():
+    settings = {
+        "template_path": join(dirname(__file__), "templates"),
+        "static_path": join(dirname(__file__), "static"),
+        "cookie_secret": base64.b64encode(uuid.uuid4().bytes + uuid.uuid4().bytes),
+        "login_url": "/login",
+    }
+
     return tornado.web.Application([
         (r"/upload_image/(\w{1,30})/(\w{1,30})", UploadImageHandler),
         (r"/upload_image_area/(\w{1,30})/(\w{1,30})/(\w{1,30})", UploadImageAreaHandler),
@@ -219,7 +230,9 @@ def make_app():
         (r"/get_receipt_field/(\w{1,30})/(\w{1,30})/(\w{1,30})", ReceiptHandler),
         (r"/create_receipt/(\w{1,30})", CreateReceiptHandler),
         (r"/calculate_data_from_area_receipt/(\w{1,30})/(\w{1,30})/(\w{1,30})", CalcAreaReceipt),
-    ], cookie_secret="__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__")  # See configuration in readme
+        (r"/login", LoginHandler),
+        (r"/", MainHandler),
+    ], **settings)
 
 
 def main(config_file: str):
