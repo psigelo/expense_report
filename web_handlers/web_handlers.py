@@ -87,7 +87,7 @@ class BrowserUploadHandler(BaseHandler):
         table = db["receipts_info"]
         result = table.insert_one({"username": name, "img": img_jpg})
         print(result)
-        self.redirect("/")  # TODO: redirect to edit this receipt directly when that endpoint exists
+        self.redirect(f"/edit_receipt/{str(result.inserted_id)}")
 
 
 class ListReceiptsHandler(BaseHandler):
