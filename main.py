@@ -15,7 +15,8 @@ import tornado.escape
 from ai.ai_receipt import get_data_from_area_receipt
 from backend_common.user_utils import insert_new_user, check_user
 from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler, LogoutHandler, NewReceiptHandler, \
-    BrowserUploadHandler, TestSeeReceiptHandler, ListReceiptsHandler, SeeReceiptHandler, EditReceiptsHandler
+    BrowserUploadHandler, ListReceiptsHandler, SeeReceiptHandler, EditReceiptsHandler, GetPolygonsHandler, \
+    ExtractAreaInfo
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -203,10 +204,11 @@ def make_app():
         (r"/logout", LogoutHandler),
         (r"/upload_browser", BrowserUploadHandler),
         (r"/new_receipt", NewReceiptHandler),
-        (r"/test_receipt", TestSeeReceiptHandler),
         (r"/see_receipt/(\w{1,50})", SeeReceiptHandler),
         (r"/list_receipts", ListReceiptsHandler),
         (r"/edit_receipt/(\w{1,50})", EditReceiptsHandler),
+        (r"/get_polygons/(\w{1,50})", GetPolygonsHandler),
+        (r"/extract_area_info/(\w{1,50})/(\w{1,50})/(\w{1,50})", ExtractAreaInfo),
 
         (r"/", MainHandler),
 
@@ -231,10 +233,11 @@ def main(config_file: str):
     LoginHandler.config_data = config_data
     RegisterHandler.config_data = config_data
     BrowserUploadHandler.config_data = config_data
-    TestSeeReceiptHandler.config_data = config_data
     ListReceiptsHandler.config_data = config_data
     EditReceiptsHandler.config_data = config_data
     SeeReceiptHandler.config_data = config_data
+    GetPolygonsHandler.config_data = config_data
+    ExtractAreaInfo.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])
@@ -242,7 +245,4 @@ def main(config_file: str):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    parser.add_argument('-c', '--config_file', help="path to config file", required=True, type=str)
-    cmd_args = parser.parse_args()
-    main(cmd_args.config_file)
+    main("./config/default.conf")

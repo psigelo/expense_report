@@ -3,8 +3,50 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit receipt</title>
+
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
 </head>
 <body>
-<img src="http://localhost:6789/see_receipt/{{receipt_id}}">
+<p> Clickear una vez el boton correspondiente al área que se desea extraer, luego escojer rectangulos que tienen el valor del área y finalmente presionar de nuevo. </p>
+<a href="/"> home </a>
+<div id="receiptid">{{receipt_id}}</div>
+
+<br />
+<br />
+<button onclick="rut_callback()"> Rut </button>
+<button onclick="name_callback()"> Nombre </button>
+<button onclick="total_amount_callback()"> Monto Total </button>
+<!-- <img src="/see_receipt/{{receipt_id}}"> -->
+
+<br />
+<br />
+<!-- TODO: agrupar todos los divs en uno solo -->
+<div id="rut_div" style="display:none">
+    <button> enviar a extraer texto </button>
+    rut: <div id="rut_ia">  </div>
+
+</div>
+
+<div id="name_div" style="display:none">
+    <button> enviar a extraer texto </button>
+    name: <div id="name_ia">  </div>
+
+</div>
+
+
+<div id="total_amount_div" style="display:none">
+    <button onclick="process_total_amount()"> enviar a extraer texto </button>
+     <div id="total_amount_ia" > total_amount: </div>
+
+</div>
+<br />
+<br />
+
+
+<div>
+    <canvas id="canvas_id" ></canvas>
+</div>
+
+<script src='{{static_url("edit_receipts.js")}}'></script>
 </body>
 </html>

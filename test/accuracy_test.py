@@ -22,7 +22,7 @@ def show_img(result_text: str, img_total):
     cv2.destroyAllWindows()
 
 
-def test_accuracy( json_test_images_crop_areas):
+def test_accuracy(json_test_images_crop_areas):
     file = open(json_test_images_crop_areas)
     test_images = json.load(file)
 

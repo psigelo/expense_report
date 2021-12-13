@@ -1,27 +1,22 @@
 import base64
+
+import cv2
 import numpy as np
 from ai.CRAFT.try_test import test_net
 import ai.CRAFT.imgproc as imgproc
 from ai.CRAFT.file_utils import image_suggested_areas
+from ai.extract_info.demo import redneuronal, directory_image
 
 
-# class CnnHandler():
-#     cnn =
-
-
-def get_data_from_area_receipt(net, img_area):
-
-    return "not implemented yet!"
-
-
-def get_data_from_area_receipt_b64(net, b64_encoded_roi):
-    jpg_original = base64.b64decode(b64_encoded_roi)
-    img_npy = np.frombuffer(jpg_original, dtype=np.uint8)
-
-    return get_data_from_area_receipt(net, img_npy)
+def get_data_from_area_receipt(img_area):
+    # TODO: LOCK FOR OTHER THREADS
+    cv2.imwrite(directory_image + "to_extract.jpg", img_area)
+    return redneuronal("to_extract.jpg")
 
 
 def get_suggestions_area_receipt(net, img):
+    # TODO: LOCK FOR OTHER THREADS
+
     """
 
     :param net: pre trained model

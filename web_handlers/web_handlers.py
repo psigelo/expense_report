@@ -1,4 +1,6 @@
+import json
 import os
+import pickle
 import random
 import string
 
@@ -9,6 +11,9 @@ import socket
 from bson import ObjectId
 from pymongo import MongoClient
 
+from ai.CRAFT.file_utils import image_suggested_areas
+from ai.ai_receipt import get_suggestions_area_receipt, get_data_from_area_receipt
+from ai.area_suggestion import AreaSuggestion
 from backend_common.user_utils import check_user, insert_new_user
 
 import cv2
@@ -80,12 +85,16 @@ class BrowserUploadHandler(BaseHandler):
         file1 = self.request.files['file1'][0]
 
         img = cv2.imdecode(np.fromstring(file1.body, np.uint8), cv2.IMREAD_COLOR)
+
+        _, poligons = get_suggestions_area_receipt(AreaSuggestion.net, img)
+
         img_jpg = cv2.imencode('.jpg', img)[1].tobytes()
 
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        result = table.insert_one({"username": name, "img": img_jpg})
+        result = table.insert_one({"username": name, "img": img_jpg, "area_suggestions": pickle.dumps(poligons,
+                                                                                                      protocol=2)})
         print(result)
         self.redirect(f"/edit_receipt/{str(result.inserted_id)}")
 
@@ -126,18 +135,83 @@ class SeeReceiptHandler(BaseHandler):
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
         receipt = table.find_one({"_id": ObjectId(receipt_id)})
-        # img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
-        self.write(receipt["img"])
+        img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
+        polygons = pickle.loads( receipt["area_suggestions"])
+        suggested_img = image_suggested_areas(img[:,:,::-1], polygons, verticals=None, texts=None)
+        self.write(cv2.imencode('.jpg', suggested_img)[1].tobytes())
 
 
-class TestSeeReceiptHandler(BaseHandler):
+class GetPolygonsHandler(BaseHandler):
     config_data = None
 
-    def get(self):
+    def get(self, receipt_id):
         self.set_header("Content-type", "image/jpg")
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        receipt = table.find_one()
-        # img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
-        self.write(receipt["img"])
+        receipt = table.find_one({"_id": ObjectId(receipt_id)})
+        polygons = pickle.loads(receipt["area_suggestions"])
+        response = []
+        for points in polygons:
+            x_min = points[:, 0].min()
+            x_max = points[:, 0].max()
+            y_min = points[:, 1].min()
+            y_max = points[:, 1].max()
+            response.append({
+                "cv_coord1_min": int(y_min),
+                "cv_coord1_max": int(y_max),
+                "cv_coord2_min": int(x_min),
+                "cv_coord2_max": int(x_max),
+            })
+        self.write(json.dumps(response))
+
+
+class ExtractAreaInfo(BaseHandler):
+    config_data = None
+
+    def get(self, area_name, receipt_id, list_of_polygons_indices):
+        polygons_indices = []
+        for index in list_of_polygons_indices.split("T"):
+            if index != "":
+                polygons_indices.append(index)
+
+
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        receipt = table.find_one({"_id": ObjectId(receipt_id)})
+
+        img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
+        polygons = pickle.loads(receipt["area_suggestions"])
+
+        poligonos_cuadrados = []
+        for points in polygons:
+            x_min = points[:, 0].min()
+            x_max = points[:, 0].max()
+            y_min = points[:, 1].min()
+            y_max = points[:, 1].max()
+            poligonos_cuadrados.append({
+                "cv_coord1_min": int(y_min),
+                "cv_coord1_max": int(y_max),
+                "cv_coord2_min": int(x_min),
+                "cv_coord2_max": int(x_max),
+            })
+
+
+        # TODO: obtener el mejor ordenamiento posible de los indices.
+        extractos = ""
+        for it in polygons_indices:
+            polygon = poligonos_cuadrados[int(it)]
+
+            img_area = img[polygon["cv_coord1_min"]:polygon["cv_coord1_max"],
+                           polygon["cv_coord2_min"]:polygon["cv_coord2_max"]]
+            if extractos != "":
+                extractos = extractos + " " + get_data_from_area_receipt(img_area)
+            else:
+                extractos = get_data_from_area_receipt(img_area)
+
+        self.write(json.dumps({"result": extractos}))
+
+
+
+

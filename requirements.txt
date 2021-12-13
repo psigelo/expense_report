@@ -5,3 +5,5 @@ opencv-python
 torch
 torchvision
 scikit-image
+lmdb
+natsort
