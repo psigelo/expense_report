@@ -13,29 +13,30 @@
 
 <br />
 <br />
-<button onclick="rut_callback()"> Rut </button>
-<button onclick="name_callback()"> Nombre </button>
-<button onclick="total_amount_callback()"> Monto Total </button>
+
+<button onclick="buttons_callback('rut')"> Rut </button>
+<button onclick="buttons_callback('name')"> Nombre </button>
+<button onclick="buttons_callback('total_amount')"> Monto Total </button>
 <!-- <img src="/see_receipt/{{receipt_id}}"> -->
 
 <br />
 <br />
 <!-- TODO: agrupar todos los divs en uno solo -->
 <div id="rut_div" style="display:none">
-    <button> enviar a extraer texto </button>
-    rut: <div id="rut_ia">  </div>
+    <button onclick="process_info('rut_ia', 'rut:')"> enviar a extraer texto </button>
+    <div id="rut_ia"> rut:  </div>
 
 </div>
 
 <div id="name_div" style="display:none">
-    <button> enviar a extraer texto </button>
-    name: <div id="name_ia">  </div>
+    <button onclick="process_info('name_ia', 'name:')"> enviar a extraer texto </button>
+    <div id="name_ia"> name:   </div>
 
 </div>
 
 
 <div id="total_amount_div" style="display:none">
-    <button onclick="process_total_amount()"> enviar a extraer texto </button>
+    <button onclick="process_info('total_amount_ia', 'total_amount:')"> enviar a extraer texto </button>
      <div id="total_amount_ia" > total_amount: </div>
 
 </div>

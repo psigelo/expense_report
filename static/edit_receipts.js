@@ -41,11 +41,8 @@ canvas.addEventListener('click', function(evt) {
     }, false)
 
 
-
-// TODO: juntar todos los callbacks
-
-function rut_callback(){
-    if(state_edit == "rut"){
+function buttons_callback(state_name){
+    if(state_edit == state_name){
         document.getElementById(state_edit+"_div").style.display = "none"
         state_edit = "not"
     }
@@ -56,41 +53,7 @@ function rut_callback(){
         catch(err) {
           console.log("no possible to hide" + state_edit+"_div")
         }
-        state_edit = "rut"
-        document.getElementById(state_edit+"_div").style.display = "block"
-    }
-}
-
-function name_callback(){
-    if(state_edit == "name"){
-        document.getElementById(state_edit+"_div").style.display = "none"
-        state_edit = "not"
-    }
-    else{
-        try {
-          document.getElementById(state_edit+"_div").style.display = "none"
-        }
-        catch(err) {
-          console.log("no possible to hide" + state_edit+"_div")
-        }
-        state_edit = "name"
-        document.getElementById(state_edit+"_div").style.display = "block"
-    }
-}
-
-function total_amount_callback(){
-    if(state_edit == "total_amount"){
-        document.getElementById(state_edit+"_div").style.display = "none"
-        state_edit = "not"
-    }
-    else{
-        try {
-          document.getElementById(state_edit+"_div").style.display = "none"
-        }
-        catch(err) {
-          console.log("no possible to hide" + state_edit+"_div")
-        }
-        state_edit = "total_amount"
+        state_edit = state_name
         document.getElementById(state_edit+"_div").style.display = "block"
     }
 }
@@ -131,7 +94,7 @@ function draw_image(){
 }
 
 
-function process_total_amount(){
+function process_info(area_id, area_text_prefix){
     encoded_selected_polygons = ""
     for (var i = 0; i < selected_polygons[state_edit].length; i++) {
         it = selected_polygons[state_edit][i]
@@ -140,7 +103,7 @@ function process_total_amount(){
     console.log(encoded_selected_polygons)
     $.getJSON("/extract_area_info/" + state_edit + "/" + $( "#receiptid" ).text() + "/" + encoded_selected_polygons, function (data, status) {
 
-        document.getElementById("total_amount_ia").innerHTML = "total_amount: "+ data["result"]
+        document.getElementById(area_id).innerHTML = area_text_prefix + data["result"]
         console.log(data)
     })
 }
