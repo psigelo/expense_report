@@ -94,7 +94,7 @@ function draw_image(){
 }
 
 
-function process_info(area_id, area_text_prefix){
+function process_info(area_id, area_text_prefix, final_area_input){
     encoded_selected_polygons = ""
     for (var i = 0; i < selected_polygons[state_edit].length; i++) {
         it = selected_polygons[state_edit][i]
@@ -103,7 +103,9 @@ function process_info(area_id, area_text_prefix){
     console.log(encoded_selected_polygons)
     $.getJSON("/extract_area_info/" + state_edit + "/" + $( "#receiptid" ).text() + "/" + encoded_selected_polygons, function (data, status) {
 
-        document.getElementById(area_id).innerHTML = area_text_prefix + data["result"]
+        document.getElementById(area_id).innerHTML = "AI extracted:  "  + area_text_prefix + data["result"]
+        document.getElementById(final_area_input).value=data["result"]
+        document.getElementById(final_area_input + "_div").style.display = "block"
         console.log(data)
     })
 }
