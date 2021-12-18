@@ -101,12 +101,14 @@ class BrowserUploadHandler(BaseHandler):
 
 class ListReceiptsHandler(BaseHandler):
     config_data = None
+
+    @tornado.web.authenticated
     def get(self):
-        # name = tornado.escape.xhtml_escape(self.current_user)
+        name = tornado.escape.xhtml_escape(self.current_user)
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        cursor = table.find()
+        cursor = table.find({"username": name})
         receipts = []
         for data in cursor:
             receipts.append(str(data["_id"]))
@@ -116,12 +118,18 @@ class ListReceiptsHandler(BaseHandler):
 class EditReceiptsHandler(BaseHandler):
     config_data = None
 
+    @tornado.web.authenticated
     def get(self, receipt_id):
-        # name = tornado.escape.xhtml_escape(self.current_user)
+        name = tornado.escape.xhtml_escape(self.current_user)
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
-        cursor = table.find()
+        receipt_oid = ObjectId(receipt_id)
+        receipt_dict = table.find_one({"_id": receipt_oid})
+
+        if receipt_dict["username"] != name:
+            self.finish({"ERROR": "USER DOES NOT MATCH"})
+
         self.render("edit_receipt.html", receipt_id=receipt_id)
         # self.write("fda")
 
@@ -129,12 +137,16 @@ class EditReceiptsHandler(BaseHandler):
 class SeeReceiptHandler(BaseHandler):
     config_data = None
 
+    @tornado.web.authenticated
     def get(self, receipt_id):
+        name = tornado.escape.xhtml_escape(self.current_user)
         self.set_header("Content-type", "image/jpg")
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
         receipt = table.find_one({"_id": ObjectId(receipt_id)})
+        if receipt["username"] != name:
+            self.finish({"ERROR": "USER DOES NOT MATCH"})
         img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
         polygons = pickle.loads( receipt["area_suggestions"])
         suggested_img = image_suggested_areas(img[:,:,::-1], polygons, verticals=None, texts=None)
@@ -144,12 +156,16 @@ class SeeReceiptHandler(BaseHandler):
 class GetPolygonsHandler(BaseHandler):
     config_data = None
 
+    @tornado.web.authenticated
     def get(self, receipt_id):
+        name = tornado.escape.xhtml_escape(self.current_user)
         self.set_header("Content-type", "image/jpg")
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
         receipt = table.find_one({"_id": ObjectId(receipt_id)})
+        if receipt["username"] != name:
+            self.finish({"ERROR": "USER DOES NOT MATCH"})
         polygons = pickle.loads(receipt["area_suggestions"])
         response = []
         for points in polygons:
@@ -169,17 +185,20 @@ class GetPolygonsHandler(BaseHandler):
 class ExtractAreaInfo(BaseHandler):
     config_data = None
 
+    @tornado.web.authenticated
     def get(self, area_name, receipt_id, list_of_polygons_indices):
+        name = tornado.escape.xhtml_escape(self.current_user)
         polygons_indices = []
         for index in list_of_polygons_indices.split("T"):
             if index != "":
                 polygons_indices.append(index)
 
-
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
         receipt = table.find_one({"_id": ObjectId(receipt_id)})
+        if receipt["username"] != name:
+            self.finish({"ERROR": "USER DOES NOT MATCH"})
 
         img = cv2.imdecode(np.fromstring(receipt["img"], np.uint8), cv2.IMREAD_COLOR)
         polygons = pickle.loads(receipt["area_suggestions"])
@@ -197,8 +216,6 @@ class ExtractAreaInfo(BaseHandler):
                 "cv_coord2_max": int(x_max),
             })
 
-
-        # TODO: obtener el mejor ordenamiento posible de los indices.
         extractos = ""
         for it in polygons_indices:
             polygon = poligonos_cuadrados[int(it)]
@@ -216,13 +233,14 @@ class ExtractAreaInfo(BaseHandler):
 class SendAreaInfo(BaseHandler):
     config_data = None
 
+    @tornado.web.authenticated
     def post(self):
+        name = tornado.escape.xhtml_escape(self.current_user)
         data = tornado.escape.json_decode(self.request.body)
         area_name = data["name_area"]
         receipt_id = data["receipt_id"]
         text = data["text"]
-        # TODO: implement user requirement
-        polygons_indices = []
+
         client = MongoClient()
         db = client[self.config_data["db_name"]]
         table = db["receipts_info"]
@@ -233,10 +251,9 @@ class SendAreaInfo(BaseHandler):
             self.write({"error": "receipt id does not exists"})
             return None
 
-        # TODO : check user
-        # if receipt_dict["user_id"] != user_id:
-        #     self.write({"error": "user does not match"})
-        #     return None
+        if receipt_dict["username"] != name:
+            self.write({"ERROR": "USER DOES NOT MATCH"})
+            return None
 
         receipt_dict[area_name + "_data"] = text
 
