@@ -213,5 +213,32 @@ class ExtractAreaInfo(BaseHandler):
         self.write(json.dumps({"result": extractos}))
 
 
+class SendAreaInfo(BaseHandler):
+    config_data = None
 
+    def post(self):
+        data = tornado.escape.json_decode(self.request.body)
+        area_name = data["name_area"]
+        receipt_id = data["receipt_id"]
+        text = data["text"]
+        # TODO: implement user requirement
+        polygons_indices = []
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        receipt_oid = ObjectId(receipt_id)
+        receipt_dict = table.find_one({"_id": receipt_oid})
 
+        if receipt_dict is None:
+            self.write({"error": "receipt id does not exists"})
+            return None
+
+        # TODO : check user
+        # if receipt_dict["user_id"] != user_id:
+        #     self.write({"error": "user does not match"})
+        #     return None
+
+        receipt_dict[area_name + "_data"] = text
+
+        table.update_one({'_id': receipt_oid}, {"$set": receipt_dict}, upsert=False)
+        self.write({"Status": "image uploaded"})

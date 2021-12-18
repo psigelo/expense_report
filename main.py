@@ -16,7 +16,7 @@ from ai.ai_receipt import get_data_from_area_receipt
 from backend_common.user_utils import insert_new_user, check_user
 from web_handlers.web_handlers import LoginHandler, MainHandler, RegisterHandler, LogoutHandler, NewReceiptHandler, \
     BrowserUploadHandler, ListReceiptsHandler, SeeReceiptHandler, EditReceiptsHandler, GetPolygonsHandler, \
-    ExtractAreaInfo
+    ExtractAreaInfo, SendAreaInfo
 
 
 class UploadImageHandler(tornado.web.RequestHandler):
@@ -209,6 +209,7 @@ def make_app():
         (r"/edit_receipt/(\w{1,50})", EditReceiptsHandler),
         (r"/get_polygons/(\w{1,50})", GetPolygonsHandler),
         (r"/extract_area_info/(\w{1,50})/(\w{1,50})/(\w{1,50})", ExtractAreaInfo),
+        (r"/send_area_info", SendAreaInfo),
 
         (r"/", MainHandler),
 
@@ -238,6 +239,7 @@ def main(config_file: str):
     SeeReceiptHandler.config_data = config_data
     GetPolygonsHandler.config_data = config_data
     ExtractAreaInfo.config_data = config_data
+    SendAreaInfo.config_data = config_data
 
     app = make_app()
     app.listen(config_data['port'])

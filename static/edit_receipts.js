@@ -111,5 +111,24 @@ function process_info(area_id, area_text_prefix, final_area_input){
 }
 
 
+function send_info(final_area_input){
+    data_json = {"name_area" : state_edit, "receipt_id": $( "#receiptid" ).text(), "text": document.getElementById(final_area_input).value}
+
+    $.ajax({
+    type: "POST",
+    url: "/send_area_info",
+    // The key needs to match your method's input parameter (case-sensitive).
+    data: JSON.stringify(data_json),
+    contentType: "application/json; charset=utf-8",
+    dataType: "json",
+    success: function(data){
+        console.log(data)
+    },
+    error: function(errMsg) {
+        alert("ERROR")
+    }
+});
+}
+
 setTimeout(function(){ draw_image() }, 100)
 document.addEventListener("DOMContentLoaded", get_polygons(), false)
