@@ -3,16 +3,24 @@
 <head>
     <meta charset="UTF-8">
     <title>Edit receipt - list</title>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
 </head>
 <body>
 
 <a href="/"> back </a>
-<table>
-    {% for receipt in receipts %}
-    <tr><th><a href="/edit_receipt/{{escape(receipt)}}">{{ escape(receipt) }}</a></th></tr>
-    {% end %}
+
+
+<table style="width:100%" id="table_receipts">
+  <tr>
+    <th>edit</th>
+    <th>delete</th>
+    <th>receipt_id</th>
+    <th>name</th>
+    <th>rut</th>
+  </tr>
+
 </table>
 
-
+<script src='{{static_url("list_receipts_to_edit.js")}}'></script>
 </body>
 </html>

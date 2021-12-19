@@ -126,14 +126,7 @@ class ListReceiptsHandler(BaseHandler):
     @tornado.web.authenticated
     def get(self):
         name = tornado.escape.xhtml_escape(self.current_user)
-        client = MongoClient()
-        db = client[self.config_data["db_name"]]
-        table = db["receipts_info"]
-        cursor = table.find({"username": name})
-        receipts = []
-        for data in cursor:
-            receipts.append(str(data["_id"]))
-        self.render("list_receipts.html", receipts=receipts)
+        self.render("list_receipts.html")
 
 
 class GetListReceiptsDataHandler(BaseHandler):
@@ -156,6 +149,20 @@ class GetListReceiptsDataHandler(BaseHandler):
             }
             receipts.append(row)
         self.write(json.dumps(receipts))
+
+
+class DeleteReceiptHandler(BaseHandler):
+    config_data = None
+
+    @tornado.web.authenticated
+    def get(self, receipt_id):
+        name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        receipt_oid = ObjectId(receipt_id)
+        table.delete_one({"_id": receipt_oid, "username": name})
+        self.redirect(r"/list_receipts")
 
 
 class DownloadCSVHandler(BaseHandler):
@@ -308,7 +315,6 @@ class ExtractAreaInfo(BaseHandler):
 
 class SendAreaInfo(BaseHandler):
     config_data = None
-
     @tornado.web.authenticated
     def post(self):
         name = tornado.escape.xhtml_escape(self.current_user)
