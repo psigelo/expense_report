@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Excel</title>
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+</head>
+<body>
+
+<table style="width:100%" id="table_receipts">
+  <tr>
+    <th>check</th>
+    <th>receipt_id</th>
+    <th>name</th>
+    <th>rut</th>
+  </tr>
+
+</table>
+<button onclick="send_checked()"> Generar excel </button>
+
+
+<script src='{{static_url("excel_generation.js")}}'></script>
+</body>
+</html>

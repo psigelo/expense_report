@@ -1,3 +1,4 @@
+import io
 import json
 import os
 import pickle
@@ -18,6 +19,7 @@ from backend_common.user_utils import check_user, insert_new_user
 
 import cv2
 import numpy as np
+import pandas as pd
 
 
 class BaseHandler(tornado.web.RequestHandler):
@@ -46,6 +48,25 @@ class LoginHandler(BaseHandler):
             self.redirect("/")
         else:
             self.redirect("/login")
+
+
+class ExcelDashboardHandler(BaseHandler):
+    config_data = None
+
+    def get(self):
+        self.render("login.html")
+
+    @tornado.web.authenticated
+    def get(self):
+        name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        cursor = table.find({"username": name})
+        receipts = []
+        for data in cursor:
+            receipts.append(str(data["_id"]))
+        self.render("excel_generation.html", receipts=receipts)
 
 
 class LogoutHandler(BaseHandler):
@@ -113,7 +134,62 @@ class ListReceiptsHandler(BaseHandler):
         for data in cursor:
             receipts.append(str(data["_id"]))
         self.render("list_receipts.html", receipts=receipts)
-        # self.write("fda")
+
+
+class GetListReceiptsDataHandler(BaseHandler):
+    config_data = None
+
+    @tornado.web.authenticated
+    def get(self):
+        name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        cursor = table.find({"username": name})
+        receipts = []
+        for data in cursor:
+            row = {
+                "receipt_id": str(data["_id"]),
+                "rut": data.get("rut_data"),
+                "total_amount": data.get("total_amount_data"),
+                "name": data.get("name_data"),
+            }
+            receipts.append(row)
+        self.write(json.dumps(receipts))
+
+
+class DownloadCSVHandler(BaseHandler):
+    config_data = None
+
+    @tornado.web.authenticated
+    def post(self):
+        data_post = tornado.escape.json_decode(self.request.body)
+
+        name = tornado.escape.xhtml_escape(self.current_user)
+        client = MongoClient()
+        db = client[self.config_data["db_name"]]
+        table = db["receipts_info"]
+        cursor = table.find({"username": name})
+        receipts = []
+        for data in cursor:
+            if str(data["_id"]) not in data_post:
+                continue
+            row = {
+                "receipt_id": str(data["_id"]),
+                "rut": data.get("rut_data"),
+                "total_amount": data.get("total_amount_data"),
+                "name": data.get("name_data"),
+            }
+            receipts.append(row)
+
+        final_dataframe = pd.DataFrame(receipts)
+        self.set_header('Content-Type', 'text/csv')
+        self.set_header('content-Disposition', 'attachement; filename=rendiciones.csv')
+        s = io.StringIO()
+        final_dataframe.to_csv(s, index=False, decimal=',', sep=';', float_format='%.3f')
+        data_to_send = s.getvalue()
+        self.write(data_to_send)
+
 
 class EditReceiptsHandler(BaseHandler):
     config_data = None
