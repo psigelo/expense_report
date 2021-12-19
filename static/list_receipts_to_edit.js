@@ -13,6 +13,9 @@ function create_table(){
             a_url.href="/edit_receipt/" +data[it]["receipt_id"]
             let button = document.createElement("button")
             button.innerText="edit"
+            button.classList.add('btn')
+            button.classList.add('btn-sm')
+            button.classList.add('btn-primary')
 
             a_url.appendChild(button)
             column0.appendChild(a_url)
@@ -22,6 +25,9 @@ function create_table(){
             a_url2.href="/delete_receipt/" +data[it]["receipt_id"]
             let button2 = document.createElement("button")
             button2.innerText="delete"
+            button2.classList.add('btn')
+            button2.classList.add('btn-sm')
+            button2.classList.add('btn-danger')
 
             a_url2.appendChild(button2)
             colum_delete.appendChild(a_url2)

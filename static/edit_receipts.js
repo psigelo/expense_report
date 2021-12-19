@@ -122,7 +122,8 @@ function send_info(final_area_input){
         contentType: "application/json; charset=utf-8",
         dataType: "json",
         success: function(data){
-            console.log(data)
+            document.getElementById("mensaje_success").style.display = "block"
+            setTimeout(()=>{document.getElementById("mensaje_success").style.display = "none"} , 2000)
         },
         error: function(errMsg) {
             alert("ERROR")
